@@ -228,7 +228,7 @@ def find_recent_storage_history(locations):
             onBeamline = False
             if dewar.dewarStatus.lower().startswith('processing'):
                 onBeamline = True
-            elif any(b in dewar.dewarLocation.lower() for b in ['i02', 'i03', 'i04', 'i04-1', 'i19', 'i23', 'i24']):
+            elif any(b in dewar.dewarLocation.lower() for b in ['p12', 'p13', 'p14', 'p11']):
                 onBeamline = True
 
             results[dewar.storageLocation] = {

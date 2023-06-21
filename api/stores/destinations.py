@@ -7,7 +7,7 @@ class EBIC:
 class MX:
     destination = 'Zone 4 Store'
     proposal_codes = ['MX', 'LB']
-    instruments = ['I03', 'I04', 'I04-1', 'I19', 'I23', 'I24']
+    instruments = ['P12', 'I04', 'P13', 'P14', 'P11']
 
 class I14:
     destination = 'I14'

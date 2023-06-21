@@ -16,7 +16,7 @@
         <div class="flex flex-col md:flex-row">
             <div class="p-4">
                 <a href="/stores/" class="">
-                    <div class="text-white text-center bg-success p-4 rounded h-full">
+                    <div class="text-white text-center bg-info p-4 rounded h-full">
                         <p class="text-3xl font-bold">Stores Dewar Management</p>
                         <p class="">To handle dewars coming into or out of the facility</p>
                     </div>
@@ -25,18 +25,18 @@
 
             <div class="p-4">
                 <a href="/zone6/" class="">
-                    <div class="text-white text-center bg-success p-4 rounded h-full">
-                        <p class="text-3xl font-bold">Zone 6 Dewar Management</p>
-                        <p class="">To handle dewars to and from beamlines</p>
+                    <div class="text-white text-center bg-info p-4 rounded h-full">
+                        <p class="text-3xl font-bold">DESY Rack Management</p>
+                        <p class="">To handle dewars to and from beamlines for DESY</p>
                     </div>
                 </a>
             </div>
-
+<!--
             <div class="p-4">
                 <a href="/zone4/" class="">
                     <div class="text-white text-center bg-success p-4 rounded h-full">
-                        <p class="text-3xl font-bold">Zone 4 Dewar Management</p>
-                        <p class="">To handle dewars in the WES storage unit</p>
+                        <p class="text-3xl font-bold">EMBL Rack Management</p>
+                        <p class="">To handle dewars to and from the beamline for EMBL</p>
                     </div>
                 </a>
             </div>
@@ -57,9 +57,11 @@
                     </div>
                 </a>
             </div>
+-->
         </div>
       <!-- Footer with link to scisoft -->
-      <footer class="text-center">For questions about these applications, please contact Scientific Software <a class="text-blue-500 underline" href="mailto:scientificsoftware@diamond.ac.uk?Subject=ISPyBLogistics">here</a></footer>
+<!--      <footer class="text-center">For questions about these applications, please contact Scientific Software <a class="text-blue-500 underline" href="mailto:scientificsoftware@diamond.ac.uk?Subject=ISPyBLogistics">here</a></footer>
+-->
     </div> <!-- END of main container -->
 </template>
 

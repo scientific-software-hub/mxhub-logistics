@@ -56,7 +56,7 @@ export default {
 
             let d = new Date(value)
         
-            return d.toUTCString()
+            return d.toString()
         }
     },
     methods: {

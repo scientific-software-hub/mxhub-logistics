@@ -4,7 +4,8 @@
       <div class="w-full md:w-1/3 border border-solid border-black m-2">
         <ScanDewar 
           v-bind:allowed_locations="allowed_locations"
-          v-on:dewars-updated="handleDewarUpdate">
+          v-on:dewars-updated="handleDewarUpdate"
+          ref="ScanDewar">
           </ScanDewar>
       </div>
       <div class="w-full md:w-1/3 border border-solid border-black m-2">
@@ -25,7 +26,6 @@
     <div v-if="zone==='zone6'" class="flex flex-wrap">
       <div class="w-full md:w-1/4 p-2" v-for="(dewar, rack) in rack_locations" v-bind:key="rack">
         <DewarCard
-          v-on:clear-location="onClearLocation"
           v-on:update-dewar="onShowDewarReport"
           v-bind:dewar="dewar"
           v-bind:rack="rack">
@@ -37,7 +37,6 @@
     <div v-else-if="zone === 'zone4'" class="flex flex-wrap">
       <div class="w-full md:w-1/6 p-2" v-for="(dewar, rack) in rack_locations" v-bind:key="rack" >
         <DewarCard
-          v-on:clear-location="onClearLocation"
           v-on:update-dewar="onShowDewarReport"
           v-bind:dewar="dewar"
           v-bind:rack="rack">
@@ -49,7 +48,6 @@
     <div v-else-if="zone==='ebic'" class="flex flex-wrap">
       <div class="w-full md:w-1/4 p-2" v-for="(dewar, rack) in rack_locations" v-bind:key="rack">
         <DewarCard 
-          v-on:clear-location="onClearLocation"
           v-on:update-dewar="onShowDewarReport"
           v-bind:dewar="dewar"
           v-bind:rack="rack">
@@ -67,7 +65,7 @@
     <ClearLocationDialog 
       v-on:confirm-removal="onConfirmClear" 
       v-bind:isActive="isRemoveDialogActive"
-      v-bind:locationToRemove="locationToRemove"
+      v-bind:barcodeToRemove="barcodeToRemove"
       v-bind:rack_locations="rack_locations">
     </ClearLocationDialog>
 
@@ -76,7 +74,12 @@
       v-bind:dewarId="dewarId"
       v-bind:dewarBarcode="dewarBarcode"
       v-bind:dewarComments="dewarComments"
-      v-on:confirm-update="onConfirmUpdateDewarReport">
+      v-bind:dewarContainers="dewarContainers"
+      v-bind:beamline="beamline || ''"
+      v-bind:visit="visit || ''"
+      v-bind:startDate="startDate || ''"
+      v-on:confirm-update="onConfirmUpdateDewarReport"
+      v-on:clear-location="onClearLocation">
     </DewarReportDialog>
 
   </div>
@@ -91,10 +94,8 @@ import MessagePanel from '@/components/MessagePanel.vue';
 import ClearLocationDialog from '@/components/ClearLocationDialog.vue';
 import DewarReportDialog from '@/components/DewarReportDialog.vue';
 import DewarCard from '@/components/DewarCard.vue';
-
 export default {
   name: 'DewarZone',
-
   components: {
     FindDewar,
     ScanDewar,
@@ -106,10 +107,9 @@ export default {
   },
   data() {
     return {
-      locationToRemove: null,
+      barcodeToRemove: null,
       isRemoveDialogActive: false,
       beamlines: [],
-
       rack_locations: {},
       // Timeout handle - used to determine if we need to refresh page
       refresh: null,
@@ -117,15 +117,17 @@ export default {
       // Dewar Report id
       dewarId: 0,
       dewarBarcode: '',
-      dewarComments: ''
+      dewarComments: '',
+      dewarContainers: '',
+      beamline: '',
+      visit: '',
+      startDate: '',
     }
   },
   created: function() {
     // Get Valid Locations
     let self = this
-
     let url = this.$store.state.apiRoot + "beamlines/" + this.zone
-
     this.$http.get(url)
     .then(function(response) {
       let json = response.data
@@ -156,13 +158,11 @@ export default {
       // Main method to retrieve dewar status for locations relevant to this zone
       getBarcodes: function() {
           let self = this
-
           if (self.refresh) {
             // If we have been triggered by a form post/update,
             // Cancel the current timeout (avoid double refresh)
             clearTimeout(self.refresh)
           }
-
           let url = this.$store.state.apiRoot + "dewars/locations/" + this.zone
       
           this.$http.get(url).then(function(response) {
@@ -176,11 +176,9 @@ export default {
           // Now setup the next update
           self.refresh = setTimeout(self.getBarcodes, self.refreshInterval)
         },
-
         handleUpdateBarcodesOK: function(response) {
           let json = response.data
           let rack_data = {} // Placeholder for new data
-
           let racklist = Object.keys(json)
           
           racklist.forEach(function(rack) {
@@ -189,22 +187,34 @@ export default {
             let needsLN2 = false
             // Flag to indicate dewar is on beamline (and therefore space is taken)...
             let onBeamline = dewarInfo.onBeamline ? dewarInfo.onBeamline : false
-
-            // Check here if arrivalData > 5 days (and dewar is not on beamline being processed)
+            // Check here if topup > 5 days ago (and dewar is not on beamline being processed)
             if (dewarInfo.arrivalDate !== "" && !onBeamline) {
               let nowSecs = new Date().getTime()/1000;
-              let lastFillSeconds = Date.parse(dewarInfo.arrivalDate)/1000
-
+              let lastFillSeconds = 0;
+              // Topups are now recorded in the comments field
+              if ('comments' in dewarInfo && dewarInfo.comments != null) {
+                let dewarComments = {}
+                try {
+                  dewarComments = JSON.parse(dewarInfo.comments)
+                } catch(err) {
+                  console.log("Error parsing JSON for dewar in "+rack)
+                }
+                if ('toppedUp' in dewarComments) {
+                  lastFillSeconds = Date.parse(dewarComments.toppedUp.slice(-1)[0])/1000
+                }
+              }
               let deltaTime = nowSecs - lastFillSeconds
-
-              if (deltaTime > 5*24*3600) {
+              if (deltaTime > 5*24*60*60) {
                 needsLN2 = true
               }
             }
-
             rack_data[rack] = {
               'dewarId': dewarInfo.dewarId,
               'comments': dewarInfo.comments,
+              'dewarContainers': dewarInfo.dewarContainers,
+              'beamline': dewarInfo.beamline,
+              'visit': dewarInfo.visit,
+              'startDate': dewarInfo.startDate,
               'barcode': dewarInfo.barcode,
               'arrivalDate': dewarInfo.arrivalDate,
               'facilityCode': dewarInfo.facilityCode,
@@ -213,7 +223,6 @@ export default {
               'onBeamline': onBeamline
             }
           })
-
           // Return rack data
           return rack_data
         },
@@ -221,33 +230,30 @@ export default {
             let message = ""
             let isError = true
             let rack_data = {} // Placeholder for new data
-
-            if (error.response.status === 404) {
+            if (error.response && error.response.status === 404) {
               // No dewars found - might be true
               message = "Warning no dewars found in these locations"
-
               // Set array to blank set so it shows placholders in page
               let racklist = Object.keys(error.response.data)
                             
               racklist.forEach(function(rack) {
                 rack_data[rack] = {'barcode':'', 'arrivalDate':'', 'needsLN2': false, 'facilityCode': '', 'status': ''}
               })
-            } else if (error.response.status == 503) {
+            } else if (error.response && error.response.status == 503) {
               message = "ISPyB database service unavailable"
               console.log("Caught 503 Service unavailable...")
             } else {
               message = "Error retrieving dewar location information from database"
             }
             this.$store.dispatch('updateMessage', {text: message, isError: isError})
-
             return rack_data
         },
         // Handler for clear location event (rack location clicked)
         // This will trigger the confirm dialog box to show up
-        onClearLocation: function(location) {
+        onClearLocation: function(barcode) {
           // This location will be upper case because we control how it is rendered
           this.isRemoveDialogActive = true
-          this.locationToRemove = location
+          this.barcodeToRemove = barcode
         },
         // User has either confirmed or cancelled
         onConfirmClear: function(confirm) {
@@ -259,7 +265,7 @@ export default {
             // window.location.reload()
           }
           // Reset data that will disable dialog box
-          this.locationToRemove = "";
+          this.barcodeToRemove = "";
           this.isRemoveDialogActive = false
         },
         // Handler for clear location event (rack location clicked)
@@ -269,6 +275,10 @@ export default {
           this.dewarComments = dewar.comments
           this.dewarId = dewar.dewarId
           this.dewarBarcode = dewar.barcode
+          this.dewarContainers = dewar.dewarContainers
+          this.beamline = dewar.beamline
+          this.visit = dewar.visit
+          this.startDate = dewar.startDate
         },
         // User has either confirmed or cancelled
         onConfirmUpdateDewarReport: function(payload) {
@@ -279,13 +289,17 @@ export default {
           this.dewarId = 0;
           this.dewarComments = '';
           this.dewarBarcode = '';
+          this.dewarContainers = '';
+          this.beamline = '';
+          this.visit = '';
+          this.startDate = '';
+          this.$refs.ScanDewar.$refs.barcode.focus();
         },
         updateDewarReport: function(dewarId, comments) {
           let url = this.$store.state.apiRoot + "dewars/comments/" + dewarId
           
           let formData = new FormData();
           formData.append('comments', comments)
-
           this.$http.patch(url, formData).then( () => {
             this.$store.dispatch('updateMessage', {text: 'Comments Updated OK', isError: false})
             // Trigger a refresh so we see the new comments
@@ -303,15 +317,11 @@ export default {
 .container-fluid {
   padding: 20px;
 }
-
 div.solid-border {
   border-style: solid;
   border-width: 1px 1px 1px 1px;
 }
-
 div.box {
   cursor: pointer;
 }
-
-
 </style>
