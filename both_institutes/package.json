@@ -1,0 +1,14 @@
+{
+  "name": "both_institutes",
+  "version": "1.0.0",
+  "description": "Website for both institues",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server.js"
+    },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+  "express": "^4.17.1"
+  }
+}

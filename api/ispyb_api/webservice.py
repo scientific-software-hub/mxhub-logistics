@@ -58,12 +58,27 @@ def set_location(barcode, location, awb=None):
 	result = None
 	comments=None
 
-	cnx = mysql.connector.connect(
-               host='localhost',
-               user='pxuser',
-               password='1spybUser',
-               database='pydb'
-        	)
+	if "DESY" in barcode:
+		print ("DESY")
+
+		cnx = mysql.connector.connect(
+               		host='localhost',
+               		user='pxuser',
+              		password='1spybUser',
+               		database='pydb'
+        		)
+
+	if "EMBL" in barcode:
+		print ("EMBL")
+
+#needs to be changed to EMBL database
+
+		cnx = mysql.connector.connect(
+                        host='localhost',
+                        user='pxuser',
+                        password='1spybUser',
+                        database='pydb'
+                        )
 
 	cursor = cnx.cursor()
 
@@ -221,6 +236,14 @@ def set_location(barcode, location, awb=None):
 	if result != None:
 		logging.getLogger('ispyb-logistics').info("Set location in ISPyB via SynchWeb bc: {} loc: {} ".format(barcode, location))
 	return result
+
+
+def new_barcode(barcode):
+
+
+
+	return result
+
 
 def set_container_location(code, location):
 

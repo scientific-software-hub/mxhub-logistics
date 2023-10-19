@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Startingpage</title>
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+</head>
+<input type="text" id="urlInput" autofocus>
+<body>
+    </br>
+    <div id="qrcode-container">
+    <div id="qrcode1"></div>
+    <div id="text-under-qrcode">DESY</div>
+    </div>
+    
+    </br>
+    </br>
+
+    <div id="qrcode-container2">
+    <div id="qrcode2"></div>
+    <div id="text-under-qrcode2">EMBL (TEST)</div>
+    </div>
+    </br>
+    </br>
+
+    <div>
+        <label for="urlInput"></label>
+        <input type="text" id="urlInput">
+        <button id="openUrlButton">Open URL</button>
+    </div>
+
+    <script>
+	 // Function to generate and display the QR code
+	    function generateQRCode(data) {
+	        var qrcode = new QRCode("qrcode-container", {
+	            text: data,
+	            width: 256,
+	            height: 256
+	        });
+	    }
+
+    generateQRCode("http://131.169.73.83:3001"); // Replace with your own data
+
+    function generateQRCode2(data) {
+        var qrcode2 = new QRCode("qrcode2", {
+            text: data,
+            width: 256,
+            height: 256
+        });
+    }
+
+    // Call the function with the data for QR code 2
+    generateQRCode2("https://www.example.com/qr2");
+
+
+
+
+
+        // Function to open the entered URL in a new tab
+        function openEnteredUrl() {
+            const urlInput = document.getElementById('urlInput');
+            const enteredUrl = urlInput.value;
+            if (enteredUrl) {
+                const newTab = window.open(enteredUrl, '_blank');
+                urlInput.value = ''; // Clear the input field
+
+                // Close the new tab after 30 seconds
+                setTimeout(function() {
+                    newTab.close();
+                }, 60000); // 60,000 milliseconds = 60 seconds, time until new window closes again
+            }
+        }
+
+        // Add a click event listener to the button
+        const openUrlButton = document.getElementById('openUrlButton');
+        openUrlButton.addEventListener('click', openEnteredUrl);
+
+        // Add a keypress event listener to the input field
+        const urlInput = document.getElementById('urlInput');
+        urlInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                openEnteredUrl();
+            }
+        });
+    </script>
+</body>
+<style>
+    #text-under-qrcode {
+        text-align: left;
+        font-size: 14px;
+        color: #333; /* Change the text color as desired */
+    }
+</style>
+
+</html>
+
