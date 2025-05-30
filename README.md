@@ -8,7 +8,7 @@ The original repository is here:
 Clemente forked the repository under:
 [https://github.com/clemenbor/flask-ispyb-logistics](https://github.com/clemenbor/flask-ispyb-logistics)
 
-Since the Version of Diamond uses a SynchWeb connection to update the dewars in the database Thorben created a Version that works without SxnchWeb
+Since the Version of Diamond uses a SynchWeb connection to update the dewars in the database Thorben created a Version that works without SxnchWeb.
 
 ### Example video from Diamond
 
