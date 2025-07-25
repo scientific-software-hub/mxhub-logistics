@@ -212,12 +212,15 @@ export default {
             console.log("onSetLocation")
             event.preventDefault()
 
+          alert("Stores.vue: onSetLocation method")
+
             let self = this
             let validLocation = this.isValidLocation(this.location)
 
             if (this.barcode && this.location && validLocation) {
                 let barcode = this.barcode
                 let location = this.location
+                let username = "123"// user name
                 let awb = ''
                 // Only set Airway bill for Stores out
                 if (location.toUpperCase() === "STORES-OUT") {
@@ -230,16 +233,24 @@ export default {
                 }
 
                 let formData = new FormData();
-                formData.append('barcode', barcode)
+                formData.append('barCode', barcode)
                 formData.append('location', location)
-                formData.append('awb', awb)
+                formData.append('username', username)
 
-                let url = this.$store.state.apiRoot + "stores/dewars"
-                
-                this.$http.post(url, formData)
+             //   let url = this.$store.state.apiRoot + "stores/dewars"
+
+              const token = "123"// user Token;
+              const url = `http://localhost:8080/ispyb/ispyb-ws/rest/${token}/dewar/updateStatus`;
+              alert("Stores.vue: url="+url)
+                this.$http.post(url, formData, {
+                  headers: {
+                    'Content-Type': 'application/json'
+                  }
+                }) // goes to api/stores/routes.py or to Java server
                 .then(function(response) {
-                    console.log(response)
+                    console.log("onSetLocation, Stores.vue, response:"+response)
                     let json = response.data
+                  alert("Stores.vue: json")
                     // Changed because we don't get the dewar id back from synchweb
                     // We get a DEWARHISTORYID instead
                     if ( json['DEWARHISTORYID'] > 0 ) {
